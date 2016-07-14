@@ -1,0 +1,141 @@
+<html lang="en">
+
+<head>
+    <title>get zippys</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="main.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <!-- Uses api key from ryan.nativerank@gmail.com  and probably doesn't need drawing library-->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVhFh5ruXLch6Umq4s-XBe4_E5FQb-Jck&libraries=drawing"></script>
+    <style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    #map {
+        height: 100%;
+        width: 100%;
+        float: left;
+    }
+    
+    #encoded-polyline {
+        height: 100px;
+        width: 100%;
+    }
+    </style>
+</head>
+
+<body>
+    <div>
+        <input id="zip" type="text">
+        </input>
+        <button id="submit">submit</button>
+    </div>
+    <div id="output">
+        <div id="map"></div>
+    </div>
+</body>
+<script>
+Number.prototype.trim = function(decimals) {
+    var s = this.toString();
+    var d = s.split(".");
+    d[1] = d[1].substring(0, decimals);
+    return parseFloat(d.join("."));
+}
+var blish = [];
+
+$(document).ready(function() {
+    function initMap() {
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: {
+                lat: 39.7456423,
+                lng: -104.9923426
+            },
+
+            mapTypeId: google.maps.MapTypeId.TERRAIN
+
+        });
+
+
+        // Construct the polygon.
+
+
+    }
+initMap();
+
+
+
+    $("#submit").on('click', function() {
+
+        var zipToGet = $("#zip").val();
+        var bloop;
+
+        $.ajax({
+            type: 'GET',
+            url: 'http://boundaries.io/geographies/postal-codes?search=' + zipToGet,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept-Encoding': 'gzip, deflate, sdch',
+                'Accept': 'application/json, text/javascript, */*; q=0.01'
+            }
+
+        }).done(function(d) {
+
+            var returnedCoords = d[0]['geometry']['coordinates'];
+            
+            for (var i = 0; i < returnedCoords.length ; i++) {
+                for (var k = 0; k < returnedCoords[i].length ; k++) {
+                    if(returnedCoords.length > 1){
+                        for (var m = 0; m < returnedCoords[i].length ; m++) {
+                            blish.push({
+                                 lat: returnedCoords[i][k][m][1],
+                                 lng: returnedCoords[i][k][m][0]
+                           });
+                        }
+                    }else{
+                        blish.push({
+                                 lat: returnedCoords[i][k][1],
+                                 lng: returnedCoords[i][k][0]
+                           });
+                    }
+                   
+
+
+
+
+
+                }
+            }
+            // Construct the polygon.
+
+            var newPoints = new google.maps.Polygon({
+                paths: blish,
+                strokeColor: '#00ff00',
+                strokeOpacity: 1,
+                strokeWeight: '50px',
+                fillColor: '#FF0000',
+                fillOpacity: 1
+            });
+
+            var bermudaTriangle = new google.maps.Polygon({
+    path: blish,
+    geodesic: false,
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+            bermudaTriangle.setMap(map);
+
+
+        });
+    });
+});
+</script>
+
+
+</html>
